@@ -1,0 +1,37 @@
+---
+- name: k3s | Check for existing installation
+  command:
+    cmd: which k3s
+  register: k3s_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: k3s | Download k3s binary
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/install-k3s.sh
+    mode: 0755
+  when: k3s_installed.rc != 0
+
+- name: k3s | Install k3s (bootstrap node)
+  command:
+    cmd: /tmp/install-k3s.sh
+  environment:
+    INSTALL_K3S_EXEC: "server --cluster-init --write-kubeconfig-mode=0644 --tls-san {{ ansible_play_hosts[0] }} --tls-san {{ hostvars[ansible_play_hosts[0]].ansible_default_ipv4.address }}"
+  when: inventory_hostname == ansible_play_hosts[0] and k3s_installed.rc != 0
+
+- name: k3s | Retrieve join token
+  command:
+    cmd: cat /var/lib/rancher/k3s/server/node-token
+  register: join_token
+  when: inventory_hostname == ansible_play_hosts[0]
+
+- name: k3s | Install k3s (all other nodes)
+  command:
+    cmd: /tmp/install-k3s.sh
+  environment:
+    INSTALL_K3S_EXEC: "server"
+    K3S_URL: "https://{{ hostvars[ansible_play_hosts[0]].ansible_default_ipv4.address }}:6443"
+    K3S_TOKEN: "{{ hostvars[ansible_play_hosts[0]]['join_token']['stdout'] }}"
+  when: inventory_hostname in ansible_play_hosts[1:] and k3s_installed.rc != 0
+

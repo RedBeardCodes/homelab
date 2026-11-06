@@ -1,2 +1,4 @@
 ---
 # master site.yml
+- import_playbook: playbooks/k3s.yml
+

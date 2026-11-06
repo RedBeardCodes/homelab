@@ -1,0 +1,8 @@
+---
+- name: Install k3s
+  hosts: k3s
+  become: yes
+  become_method: sudo
+  roles:
+    - k3s
+
