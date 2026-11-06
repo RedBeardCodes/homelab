@@ -1,2 +1,7 @@
+# skip some python files
 *.pyc
 .venv/
+
+# skip and don't commit inventory files
+ansible/inventory/
+
