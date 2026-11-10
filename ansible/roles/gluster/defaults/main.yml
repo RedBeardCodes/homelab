@@ -1,0 +1,16 @@
+gluster:
+  packages:
+    - glusterfs-common
+    - glusterfs-server
+    - nfs-ganesha-gluster
+  brick:
+    device: sda3
+    filesystem: ext4
+    mount: /data
+    dir: /data/brick1/vol1
+  volume:
+    name: gluster_vol
+    replicas: 3
+    transport: tcp
+    mount: /shared
+

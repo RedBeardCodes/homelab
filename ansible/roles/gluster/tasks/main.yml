@@ -1,0 +1,94 @@
+---
+- name: gluster | Install packages
+  apt:
+    name: "{{ gluster.packages }}"
+    state: present
+
+- name: gluster | Enable and start the gluster service
+  systemd:
+    name: glusterd
+    state: started
+    enabled: true
+
+- name: gluster | Verify brick device
+  shell: "lsblk -f | grep {{ gluster.brick.device }}"
+  register: gluster_brick_device_available
+  changed_when: false
+  ignore_errors: true
+
+- name: gluster | Create filesystem on brick device
+  filesystem:
+    fstype: "{{ gluster.brick.filesystem }}"
+    dev: "/dev/{{ gluster.brick.device }}"
+  when: gluster.brick.device in gluster_brick_device_available.stdout and gluster.brick.filesystem not in gluster_brick_device_available.stdout
+
+- name: gluster | Create brick mount
+  file:
+    path: "{{ gluster.brick.mount }}"
+    state: directory
+    mode: 0755
+
+- name: gluster | Mount brick
+  mount:
+    src: "/dev/{{ gluster.brick.device }}"
+    path: "{{ gluster.brick.mount }}"
+    fstype: "{{ gluster.brick.filesystem }}"
+    opts: defaults,noatime,errors=remount-ro
+    state: mounted
+
+- name: gluster | Create brick directory
+  file:
+    path: "{{ gluster.brick.dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: gluster | Create trusted pool
+  command:
+    cmd: "gluster peer probe {{ item }}"
+  with_items: "{{ ansible_play_hosts[1:] }}"
+  when: inventory_hostname == ansible_play_hosts[0]
+
+- name: gluster | Check for existing volume
+  command:
+    cmd: gluster volume info
+  register: existing_gluster_volume
+
+- name: gluster | Create replicated volume
+  command:
+    cmd: >
+      gluster volume create {{ gluster.volume.name }}
+      replica {{ gluster.volume.replicas }}
+      transport {{ gluster.volume.transport }}
+      {% for host in ansible_play_hosts %}
+      {{ host }}:{{ gluster.brick.dir }}
+      {%- endfor %}
+  when: inventory_hostname == ansible_play_hosts[0] and gluster.volume.name not in existing_gluster_volume.stdout
+
+- name: gluster | Ensure that the volume is started
+  command:
+    cmd: "gluster volume start {{ gluster.volume.name }}"
+  when: inventory_hostname == ansible_play_hosts[0] and gluster.volume.name in existing_gluster_volume.stdout and "Started" not in existing_gluster_volume.stdout
+
+- name: gluster | Create volume mount directory
+  file:
+    path: "{{ gluster.volume.mount }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: gluster | Mount volume
+  mount:
+    src: "{{ ansible_play_hosts[0] }}:{{ gluster.volume.name }}"
+    path: "{{ gluster.volume.mount }}"
+    fstype: glusterfs
+    opts: defaults,_netdev
+    state: mounted
+
+# - name: debug
+  # debug:
+    # msg: "{{ gluster.brick.device }}"
+  # when: gluster.brick.device in gluster_brick_device_available.stdout
+
