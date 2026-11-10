@@ -35,3 +35,12 @@
     K3S_TOKEN: "{{ hostvars[ansible_play_hosts[0]]['join_token']['stdout'] }}"
   when: inventory_hostname in ansible_play_hosts[1:] and k3s_installed.rc != 0
 
+- name: k3s | Copy k3s config.yaml to hosts
+  copy:
+    src: etc/rancher/k3s/config.yaml
+    dest: /etc/rancher/k3s/config.yaml
+    mode: 0644
+    owner: root
+    group: root
+  notify: Restart k3s
+

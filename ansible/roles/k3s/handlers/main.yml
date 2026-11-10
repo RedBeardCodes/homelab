@@ -1,0 +1,16 @@
+---
+- name: Restart k3s
+  systemd:
+    name: k3s
+    state: restarted
+
+- name: Stop k3s
+  systemd:
+    name: k3s
+    state: stopped
+
+- name: start k3s
+  systemd:
+    name: k3s
+    state: started
+
