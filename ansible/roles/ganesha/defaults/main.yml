@@ -1,0 +1,11 @@
+ganesha:
+  packages:
+    - nfs-ganesha-gluster
+  exports:
+    - id: 101
+      path: /shared
+      pseudo: /shared
+      protocols: "3, 4"
+      transports: "TCP"
+      sec_type: "sys"
+

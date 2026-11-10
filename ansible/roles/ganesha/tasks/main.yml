@@ -1,0 +1,30 @@
+---
+- name: ganesha | Install packages
+  apt:
+    name: "{{ ganesha.packages }}"
+    state: present
+
+- name: ganesha | Ensure export directory exists
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop: "{{ ganesha.exports }}"
+
+- name: ganesha | Write configuration file
+  template:
+    src: etc/ganesha/ganesha.conf
+    dest: /etc/ganesha/ganesha.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: Restart Ganesha
+
+- name: ganesha | Enable and start ganesha
+  systemd:
+    name: nfs-ganesha
+    state: started
+    enabled: true
+

@@ -2,7 +2,6 @@ gluster:
   packages:
     - glusterfs-common
     - glusterfs-server
-    - nfs-ganesha-gluster
   brick:
     device: sda3
     filesystem: ext4

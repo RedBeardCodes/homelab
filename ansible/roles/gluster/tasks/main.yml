@@ -87,8 +87,3 @@
     opts: defaults,_netdev
     state: mounted
 
-# - name: debug
-  # debug:
-    # msg: "{{ gluster.brick.device }}"
-  # when: gluster.brick.device in gluster_brick_device_available.stdout
-

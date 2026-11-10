@@ -1,0 +1,16 @@
+---
+- name: Restart Ganesha
+  systemd_service:
+    name: nfs-ganesha
+    state: restarted
+
+- name: Stop Ganesha
+  systemd_service:
+    name: nfs-ganesha
+    state: stopped
+
+- name: Start Ganesha
+  systemd_service:
+    name: nfs-ganesha
+    state: started
+
