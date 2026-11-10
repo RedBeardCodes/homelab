@@ -2,4 +2,3 @@
 # master site.yml
 - import_playbook: playbooks/k3s.yml
 - import_playbook: playbooks/gluster.yml
-- import_playbook: playbooks/ganesha.yml

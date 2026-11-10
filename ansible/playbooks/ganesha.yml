@@ -1,7 +1,0 @@
----
-- name: Install ganesha
-  hosts: gluster
-  become: yes
-  become_method: sudo
-  roles:
-    - ganesha
