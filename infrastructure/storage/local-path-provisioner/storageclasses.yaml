@@ -1,7 +1,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: gluster
+  name: gluster-retain
   annotations:
     defaultVolumeType: hostPath
 provisioner: rancher.io/local-path
@@ -11,10 +11,30 @@ volumeBindingMode: Immediate
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: local
+  name: gluster-delete
+  annotations:
+    defaultVolumeType: hostPath
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-retain
   annotations:
     defaultVolumeType: local
 provisioner: rancher.io/local-path
 reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-delete
+  annotations:
+    defaultVolumeType: local
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 
